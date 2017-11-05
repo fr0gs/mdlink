@@ -1,0 +1,12 @@
+{
+  "name": "mlink",
+  "version": "1.0.0",
+  "description": "An automatic npm module linker to quickly test & develop multiple modules in a project",
+  "main": "mlink.js",
+  "author": "Esteban Sastre",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^2.11.0",
+    "npm": "^5.5.1"
+  }
+}
