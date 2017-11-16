@@ -83,7 +83,7 @@ function removeLinks(modules={}) {
 
 function createLink(global, repo, local) {
     console.log(`[+] Create link from ${global} -> ${repo}`);
-    fs.symlinkSync(repo, global);
+    fs.symlinkSync(repo, global); // This one needs sudo (equivalent to sudo npm link)
     console.log(`[+] Create link from ${local} -> ${global}`);
     fs.symlinkSync(global, local);
 }
@@ -113,16 +113,17 @@ function linkModules(modules={}) {
                         //Clone the url in the path
                         clone(repo_module_url, repo_module_path, () => {
                             console.log(`[+] Successfully cloned ${repo_module_url} in path: ${repo_module_path}`);
+                            createLink(global_module_path, repo_module_path, local_module_path);
                         })
                     }
                     else {
                         if (!fs.existsSync(BASE_MODULES_PATH)) fs.mkdirSync(dir);
                         clone(repo_module_url, path.join(BASE_MODULES_PATH, module), () => {
                             console.log(`[+] Successfully cloned ${repo_module_url}`);
+                            createLink(global_module_path, repo_module_path, local_module_path);
                         })
                     }
                 }
-                createLink(global_module_path, repo_module_path, local_module_path)
             });
         }
         else throw new Error("/usr/lib/node_modules does not exist");
