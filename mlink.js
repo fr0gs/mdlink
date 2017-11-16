@@ -8,11 +8,13 @@ const fs = require('fs');
 const process = require('process');
 const paths = require('global-paths');
 const clone = require('git-clone');
+const sudo = require('sudo-prompt');
+const exec = require('child_process').exec;
 
-const BASE_MODULES_PATH = "/home/esteban/gits/aux";
-const NPM_GLOBAL_PATH = "/usr/lib/node_modules";
+const BASE_MODULES_PATH = "/home/esteban/gits/aux"; // Move this into the mlink.config.json
 const PROJECT_PATH = process.cwd();
 
+let NPM_GLOBAL_PREFIX = "/usr/local";
 
 function readConfigFile() {
     return JSON.parse(fs.readFileSync('mlink.config.json', 'utf8'));
@@ -21,7 +23,6 @@ function readConfigFile() {
 function isEmptyObject(obj) {
     return Object.keys(obj).length === 0;
 }
-
 
 program
     .version('1.0.0')
@@ -32,11 +33,10 @@ program
     .alias("s")
     .description("Read the config file and perform the linking")
     .action(() => {
-      const uid = parseInt(process.env.SUDO_UID);
-      if (uid)
-	    linkModules(readConfigFile());
-      else
-	    console.error("ERROR: Run mlink as root");
+        exec("npm config get prefix", (error, stdout, stderr) => {
+            NPM_GLOBAL_PREFIX = stdout.trim();
+            linkModules(readConfigFile(), NPM_GLOBAL_PREFIX);
+        });
     });
 
 program
@@ -44,25 +44,26 @@ program
     .alias("r")
     .description("Remove all the links created by mlink and reinstall packages using npm")
     .action(() => {
-      const uid = parseInt(process.env.SUDO_UID);
-      if (uid)
-	    removeLinks(readConfigFile());
-      else
-	    console.error("ERROR: Run mlink as root");
+        exec("npm config get prefix", (error, stdout, stderr) => {
+            NPM_GLOBAL_PREFIX = stdout.trim();
+            removeLinks(readConfigFile(), NPM_GLOBAL_PREFIX);
+        });
     });
 
 program.parse(process.argv);
 
 
-function removeLinks(modules={}) {
+function removeLinks(modules={}, npm_global_prefix = "/usr/local") {
     if (isEmptyObject(modules)) {
       throw new Error("The mlink.config.json file is empty");
     }
+    const NPM_GLOBAL_PATH = `${npm_global_prefix}/lib/node_modules`;
+
     if (paths().indexOf(NPM_GLOBAL_PATH) != -1) {
         Object.keys(modules).forEach((module) => {
             const global_module_path = `${NPM_GLOBAL_PATH}/${module}`;
             const local_module_path = `${PROJECT_PATH}/node_modules/${module}`;
-          const repo_module_path = `${modules[module].path}`;
+            const repo_module_path = `${modules[module].path}`;
 
             if (fs.existsSync(local_module_path)) {
                 const stats = fs.lstatSync(local_module_path);
@@ -74,25 +75,36 @@ function removeLinks(modules={}) {
 
             if (fs.existsSync(global_module_path)) {
                 console.log(`[+] Remove global link from ${global_module_path} -> ${repo_module_path}`);
-                fs.unlinkSync(global_module_path);
+                sudo.exec(`rm -rf ${global_module_path}`, {}, (err, stdo, stdedd) => { if (err) throw err});
             }
         });
     }
-    else throw new Error("/usr/lib/node_modules does not exist");    
+    else throw new Error(`${npm_global_prefix}/lib/node_modules does not exist`);    
 }
 
 function createLink(global, repo, local) {
     console.log(`[+] Create link from ${global} -> ${repo}`);
-    fs.symlinkSync(repo, global); // This one needs sudo (equivalent to sudo npm link)
+
+    // Create the global module -> local repository link.
+    // This needs sudo since we are copying files in a
+    // sensitive directory.
+    sudo.exec(`npm link ${repo}`, {}, (error, stdout, stderr) => {
+            if (error) throw error;
+        }
+    );
+
+    // Create the local node_modules/module -> global module linkModules.
     console.log(`[+] Create link from ${local} -> ${global}`);
     fs.symlinkSync(global, local);
 }
 
-function linkModules(modules={}) {
+function linkModules(modules={}, npm_global_prefix = "/usr/local") {
     if (isEmptyObject(modules)) {
       throw new Error("The mlink.config.json file is empty");
     }
     else {
+        const NPM_GLOBAL_PATH = `${npm_global_prefix}/lib/node_modules`;
+
         if (paths().indexOf(NPM_GLOBAL_PATH) != -1) {
             Object.keys(modules).forEach((module) => {
                 const global_module_path = `${NPM_GLOBAL_PATH}/${module}`;
@@ -100,7 +112,7 @@ function linkModules(modules={}) {
                 const repo_module_path = `${modules[module].path}` || null;
                 const repo_module_url = `${modules[module].url}` || null;
 
-                // If ./node_modules/module exists, either normal or symlink, remove it
+                // If ./node_modules/module exists, either normal or symlink, remove it.
                 if (fs.existsSync(local_module_path)) {
                     console.log(`[+] Path ${local_module_path} already exists, removing it.`);
                     fs.unlink(local_module_path);
@@ -108,9 +120,9 @@ function linkModules(modules={}) {
 
                 // If there is a url specified.
                 if (repo_module_url !== null) {
-                    // if there is path, clone the url in paths
+                    // if there is path, clone the url in paths.
                     if (repo_module_path !== null) {
-                        //Clone the url in the path
+                        //Clone the url in the path.
                         clone(repo_module_url, repo_module_path, () => {
                             console.log(`[+] Successfully cloned ${repo_module_url} in path: ${repo_module_path}`);
                             createLink(global_module_path, repo_module_path, local_module_path);
@@ -126,6 +138,6 @@ function linkModules(modules={}) {
                 }
             });
         }
-        else throw new Error("/usr/lib/node_modules does not exist");
+        else throw new Error(`${npm_global_prefix}/lib/node_modules does not exist`);
     }
 }
