@@ -109,13 +109,15 @@ function linkModules(modules={}, npm_global_prefix = "/usr/local") {
             Object.keys(modules).forEach((module) => {
                 const global_module_path = `${NPM_GLOBAL_PATH}/${module}`;
                 const local_module_path = `${PROJECT_PATH }/node_modules/${module}`;
-                const repo_module_path = `${modules[module].path}` || null;
-                const repo_module_url = `${modules[module].url}` || null;
+                const repo_module_path = `${modules[module].path}` || undefined;
+                const repo_module_url = `${modules[module].url}` || undefined;
+
+                console.log(`repo_module_url: ${repo_module_url}`);
 
                 // If ./node_modules/module exists, either normal or symlink, remove it.
                 if (fs.existsSync(local_module_path)) {
                     console.log(`[+] Path ${local_module_path} already exists, removing it.`);
-                    fs.unlink(local_module_path);
+                    fs.unlinkSync(local_module_path);
                 }
 
                 // If there is a url specified.
@@ -126,6 +128,7 @@ function linkModules(modules={}, npm_global_prefix = "/usr/local") {
                         clone(repo_module_url, repo_module_path, () => {
                             console.log(`[+] Successfully cloned ${repo_module_url} in path: ${repo_module_path}`);
                             createLink(global_module_path, repo_module_path, local_module_path);
+                            console.log("-------------------------");
                         })
                     }
                     else {
@@ -133,8 +136,16 @@ function linkModules(modules={}, npm_global_prefix = "/usr/local") {
                         clone(repo_module_url, path.join(BASE_MODULES_PATH, module), () => {
                             console.log(`[+] Successfully cloned ${repo_module_url}`);
                             createLink(global_module_path, repo_module_path, local_module_path);
+                            console.log("-------------------------");
                         })
                     }
+                }
+                else {
+                    if (fs.existsSync(repo_module_path)) {
+                        createLink(global_module_path, repo_module_path, local_module_path);
+                        console.log("-------------------------");
+                    }
+                    else throw new Error(`${repo_module_path} does not exist`);
                 }
             });
         }
