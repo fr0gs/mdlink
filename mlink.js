@@ -81,6 +81,13 @@ function removeLinks(modules={}) {
     else throw new Error("/usr/lib/node_modules does not exist");    
 }
 
+function createLink(global, repo, local) {
+    console.log(`[+] Create link from ${global} -> ${repo}`);
+    fs.symlinkSync(repo, global);
+    console.log(`[+] Create link from ${local} -> ${global}`);
+    fs.symlinkSync(global, local);
+}
+
 function linkModules(modules={}) {
     if (isEmptyObject(modules)) {
       throw new Error("The mlink.config.json file is empty");
@@ -115,10 +122,7 @@ function linkModules(modules={}) {
                         })
                     }
                 }
-                console.log(`[+] Create link from ${global_module_path} -> ${repo_module_path}`);
-                fs.symlinkSync(repo_module_path, global_module_path);
-                console.log(`[+] Create link from ${local_module_path} -> ${global_module_path}`);
-                fs.symlinkSync(global_module_path, local_module_path);
+                createLink(global_module_path, repo_module_path, local_module_path)
             });
         }
         else throw new Error("/usr/lib/node_modules does not exist");
