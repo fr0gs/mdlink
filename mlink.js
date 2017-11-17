@@ -26,7 +26,13 @@ function isEmptyObject(obj) {
 
 program
     .version('1.0.0')
-  .description("An automatic npm module linker to quickly test & develop multiple modules in a project");
+    .description("An automatic npm module linker to quickly test & develop multiple modules in a project");
+
+program
+    .command("init")
+    .alias("i")
+    .description("Create the a mlink.config.json skeleton file")
+    .action(() =>  createInitConfig());
 
 program
     .command("start")
@@ -51,6 +57,19 @@ program
     });
 
 program.parse(process.argv);
+
+
+function createInitConfig() {
+    let sampleObject = {
+        "mlink": {
+            "url": "https://github.com/fr0gs/mlink",
+            "path": "~/test/mlink"
+        }
+    };
+
+    let json = JSON.stringify(sampleObject, null, 2); 
+    return fs.writeFileSync('mlink.config.json', json); 
+}
 
 
 function removeLinks(modules={}, npm_global_prefix = "/usr/local") {
@@ -111,8 +130,6 @@ function linkModules(modules={}, npm_global_prefix = "/usr/local") {
                 const local_module_path = `${PROJECT_PATH }/node_modules/${module}`;
                 const repo_module_path = `${modules[module].path}` || undefined;
                 const repo_module_url = `${modules[module].url}` || undefined;
-
-                console.log(`repo_module_url: ${repo_module_url}`);
 
                 // If ./node_modules/module exists, either normal or symlink, remove it.
                 if (fs.existsSync(local_module_path)) {
