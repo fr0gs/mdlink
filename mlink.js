@@ -11,18 +11,10 @@ const clone = require('git-clone');
 const sudo = require('sudo-prompt');
 const exec = require('child_process').exec;
 
-const BASE_MODULES_PATH = "/home/esteban/gits/aux"; // Move this into the mlink.config.json
 const PROJECT_PATH = process.cwd();
 
-let NPM_GLOBAL_PREFIX = "/usr/local";
-
-function readConfigFile() {
-    return JSON.parse(fs.readFileSync('mlink.config.json', 'utf8'));
-}
-
-function isEmptyObject(obj) {
-    return Object.keys(obj).length === 0;
-}
+let BASE_MODULES_PATH;
+let NPM_GLOBAL_PREFIX;
 
 program
     .version('1.0.0')
@@ -32,7 +24,7 @@ program
     .command("init")
     .alias("i")
     .description("Create the a mlink.config.json skeleton file")
-    .action(() =>  createInitConfig());
+    .action(() => createInitConfig());
 
 program
     .command("start")
@@ -59,26 +51,54 @@ program
 program.parse(process.argv);
 
 
+function readConfigFile() {
+    return JSON.parse(fs.readFileSync('mlink.config.json', 'utf8'));
+}
+
+function isEmptyObject(obj) {
+    return Object.keys(obj).length === 0;
+}
+
+function deleteFolderRecursive(path) {
+    if (fs.existsSync(path)) {
+        fs.readdirSync(path).forEach(function (file, index) {
+            var curPath = path + "/" + file;
+            if (fs.lstatSync(curPath).isDirectory()) { // recurse
+                deleteFolderRecursive(curPath);
+            } else { // delete file
+                fs.unlinkSync(curPath);
+            }
+        });
+        fs.rmdirSync(path);
+    }
+};
+
 function createInitConfig() {
     let sampleObject = {
-        "mlink": {
-            "url": "https://github.com/fr0gs/mlink",
-            "path": "~/test/mlink"
-        }
-    };
-
+        "base_modules_path": "~/gits/test",
+        "modules": [
+            {
+                "mlink": {
+                    "url": "https://github.com/fr0gs/mlink",
+                    "path": "~/gits/test/mlink"
+                }
+            }
+        ]
+    }
     let json = JSON.stringify(sampleObject, null, 2); 
     return fs.writeFileSync('mlink.config.json', json); 
 }
 
 
-function removeLinks(modules={}, npm_global_prefix = "/usr/local") {
-    if (isEmptyObject(modules)) {
+function removeLinks(config={}, npm_global_prefix) {
+    if (isEmptyObject(config)) {
       throw new Error("The mlink.config.json file is empty");
     }
     const NPM_GLOBAL_PATH = `${npm_global_prefix}/lib/node_modules`;
+    BASE_MODULES_PATH = config['base_modules_path'];
 
     if (paths().indexOf(NPM_GLOBAL_PATH) != -1) {
+        const modules = config['modules'];
         Object.keys(modules).forEach((module) => {
             const global_module_path = `${NPM_GLOBAL_PATH}/${module}`;
             const local_module_path = `${PROJECT_PATH}/node_modules/${module}`;
@@ -96,6 +116,9 @@ function removeLinks(modules={}, npm_global_prefix = "/usr/local") {
                 console.log(`[+] Remove global link from ${global_module_path} -> ${repo_module_path}`);
                 sudo.exec(`rm -rf ${global_module_path}`, {}, (err, stdo, stdedd) => { if (err) throw err});
             }
+        });
+        exec("npm install", (error, stdout, stderr) => {
+            if (error) throw new Error('Could not execute npm install')
         });
     }
     else throw new Error(`${npm_global_prefix}/lib/node_modules does not exist`);    
@@ -117,14 +140,16 @@ function createLink(global, repo, local) {
     fs.symlinkSync(global, local);
 }
 
-function linkModules(modules={}, npm_global_prefix = "/usr/local") {
-    if (isEmptyObject(modules)) {
+function linkModules(config={}, npm_global_prefix) {
+    if (isEmptyObject(config)) {
       throw new Error("The mlink.config.json file is empty");
     }
     else {
         const NPM_GLOBAL_PATH = `${npm_global_prefix}/lib/node_modules`;
+        BASE_MODULES_PATH = config['base_modules_path'];
 
         if (paths().indexOf(NPM_GLOBAL_PATH) != -1) {
+            const modules = config['modules'];
             Object.keys(modules).forEach((module) => {
                 const global_module_path = `${NPM_GLOBAL_PATH}/${module}`;
                 const local_module_path = `${PROJECT_PATH }/node_modules/${module}`;
@@ -134,7 +159,7 @@ function linkModules(modules={}, npm_global_prefix = "/usr/local") {
                 // If ./node_modules/module exists, either normal or symlink, remove it.
                 if (fs.existsSync(local_module_path)) {
                     console.log(`[+] Path ${local_module_path} already exists, removing it.`);
-                    fs.unlinkSync(local_module_path);
+                    deleteFolderRecursive(local_module_path);
                 }
 
                 // If there is a url specified.
