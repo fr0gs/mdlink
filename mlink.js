@@ -10,6 +10,8 @@ const paths = require('global-paths');
 const clone = require('git-clone');
 const sudo = require('sudo-prompt');
 const exec = require('child_process').exec;
+const util = require('./mlink-util.js');
+
 
 const PROJECT_PATH = process.cwd();
 
@@ -33,7 +35,7 @@ program
     .action(() => {
         exec("npm config get prefix", (error, stdout, stderr) => {
             NPM_GLOBAL_PREFIX = stdout.trim();
-            linkModules(readConfigFile(), NPM_GLOBAL_PREFIX);
+            linkModules(util.readConfigFile(), NPM_GLOBAL_PREFIX);
         });
     });
 
@@ -44,34 +46,12 @@ program
     .action(() => {
         exec("npm config get prefix", (error, stdout, stderr) => {
             NPM_GLOBAL_PREFIX = stdout.trim();
-            removeLinks(readConfigFile(), NPM_GLOBAL_PREFIX);
+            removeLinks(util.readConfigFile(), NPM_GLOBAL_PREFIX);
         });
     });
 
 program.parse(process.argv);
 
-
-function readConfigFile() {
-    return JSON.parse(fs.readFileSync('mlink.config.json', 'utf8'));
-}
-
-function isEmptyObject(obj) {
-    return Object.keys(obj).length === 0;
-}
-
-function deleteFolderRecursive(path) {
-    if (fs.existsSync(path)) {
-        fs.readdirSync(path).forEach(function (file, index) {
-            var curPath = path + "/" + file;
-            if (fs.lstatSync(curPath).isDirectory()) { // recurse
-                deleteFolderRecursive(curPath);
-            } else { // delete file
-                fs.unlinkSync(curPath);
-            }
-        });
-        fs.rmdirSync(path);
-    }
-};
 
 function createInitConfig() {
     let sampleObject = {
@@ -91,7 +71,7 @@ function createInitConfig() {
 
 
 function removeLinks(config={}, npm_global_prefix) {
-    if (isEmptyObject(config)) {
+    if (util.isEmptyObject(config)) {
       throw new Error("The mlink.config.json file is empty");
     }
     const NPM_GLOBAL_PATH = `${npm_global_prefix}/lib/node_modules`;
@@ -141,7 +121,7 @@ function createLink(global, repo, local) {
 }
 
 function linkModules(config={}, npm_global_prefix) {
-    if (isEmptyObject(config)) {
+    if (util.isEmptyObject(config)) {
       throw new Error("The mlink.config.json file is empty");
     }
     else {
@@ -159,7 +139,7 @@ function linkModules(config={}, npm_global_prefix) {
                 // If ./node_modules/module exists, either normal or symlink, remove it.
                 if (fs.existsSync(local_module_path)) {
                     console.log(`[+] Path ${local_module_path} already exists, removing it.`);
-                    deleteFolderRecursive(local_module_path);
+                    util.deleteFolderRecursive(local_module_path);
                 }
 
                 // If there is a url specified.
