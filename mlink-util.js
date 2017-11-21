@@ -4,8 +4,7 @@ const fs = require('fs');
 
 /**
  * Reads the mlink configuration file from disk
- * @param {string} title - The title of the book.
- * @param {string} author - The author of the book.
+ * @returns {object} - the parsed object.
  */
 function readConfigFile() {
     return JSON.parse(fs.readFileSync('mlink.config.json', 'utf8'));
@@ -13,7 +12,8 @@ function readConfigFile() {
 
 /**
  * Check if the object is empty.
- * @param {object} object - The object.
+ * @param {object} obj - The object.
+ * @returns {boolean}
  */
 function isEmptyObject(obj) {
     return Object.keys(obj).length === 0;
