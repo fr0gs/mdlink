@@ -3,6 +3,7 @@
 const clone = require('git-clone');
 const exec = require('child_process').exec;
 const fs = require('fs');
+const path = require('path');
 const paths = require('global-paths');
 const sudo = require('sudo-prompt');
 const util = require('./mlink-util.js');
@@ -117,8 +118,8 @@ function linkModules(config = {}, npm_global_prefix, project_path) {
             Object.keys(modules).forEach((module) => {
                 const global_module_path = `${NPM_GLOBAL_PATH}/${module}`;
                 const local_module_path = `${project_path}/node_modules/${module}`;
-                const repo_module_path = `${modules[module].path}` || undefined;
-                const repo_module_url = `${modules[module].url}` || undefined;
+                const repo_module_path = modules[module].path || undefined;
+                const repo_module_url = modules[module].url || undefined;
 
                 // If ./node_modules/module exists, either normal or symlink, remove it.
                 if (fs.existsSync(local_module_path)) {
@@ -127,12 +128,12 @@ function linkModules(config = {}, npm_global_prefix, project_path) {
                 }
 
                 // If there is a url specified.
-                if (repo_module_url !== null) {
+                if (typeof repo_module_url !== 'undefined') {
                     // if there is path, clone the url in paths.
-                    if (repo_module_path !== null) {
+                    if (typeof repo_module_path !== 'undefined') {
                         //Clone the url in the path.
                         clone(repo_module_url, repo_module_path, () => {
-                            console.log(`[+] Successfully cloned ${repo_module_url} in path: ${repo_module_path}`);
+                            console.log(`[+] <path exists> . Successfully cloned ${repo_module_url} in path: ${repo_module_path}`);
                             createLink(global_module_path, repo_module_path, local_module_path);
                             console.log("-------------------------");
                         })
@@ -140,7 +141,7 @@ function linkModules(config = {}, npm_global_prefix, project_path) {
                     else {
                         if (!fs.existsSync(BASE_MODULES_PATH)) fs.mkdirSync(dir);
                         clone(repo_module_url, path.join(BASE_MODULES_PATH, module), () => {
-                            console.log(`[+] Successfully cloned ${repo_module_url}`);
+                            console.log(`[+] <path does not exist> . Successfully cloned ${repo_module_url}`);
                             createLink(global_module_path, repo_module_path, local_module_path);
                             console.log("-------------------------");
                         })
