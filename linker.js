@@ -1,5 +1,6 @@
 'use strict';
 
+const async = require('async');
 const clone = require('git-clone');
 const exec = require('child_process').exec;
 const fs = require('fs');
@@ -115,7 +116,8 @@ function linkModules(config = {}, npm_global_prefix, project_path) {
 
         if (paths().indexOf(NPM_GLOBAL_PATH) != -1) {
             const modules = config['modules'];
-            Object.keys(modules).forEach((module) => {
+
+            async.forEach(Object.keys(modules), (module, callback) => {
                 const global_module_path = `${NPM_GLOBAL_PATH}/${module}`;
                 const local_module_path = `${project_path}/node_modules/${module}`;
                 const repo_module_path = modules[module].path || undefined;
@@ -139,8 +141,10 @@ function linkModules(config = {}, npm_global_prefix, project_path) {
                         })
                     }
                     else {
-                        if (!fs.existsSync(BASE_MODULES_PATH)) fs.mkdirSync(dir);
-                        clone(repo_module_url, path.join(BASE_MODULES_PATH, module), () => {
+                        const dir = path.join(BASE_MODULES_PATH, module);
+                        if (!fs.existsSync(dir)) 
+                            fs.mkdirSync(dir);
+                        clone(repo_module_url, dir, () => {
                             console.log(`[+] <path does not exist> . Successfully cloned ${repo_module_url}`);
                             createLink(global_module_path, repo_module_path, local_module_path);
                             console.log("-------------------------");
