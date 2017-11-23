@@ -1,6 +1,7 @@
 'use strict';
 
 const fs = require('fs');
+const path = require('path');
 
 /**
  * Reads the mlink configuration file from disk
@@ -39,9 +40,31 @@ function deleteFolderRecursive(path) {
 };
 
 
+/**
+ * Creates a directory in the specified path with the
+ * intermediate folders if necessary.
+ * @param {string} dir the directory path to create. 
+ */
+function mkdirWithParentsSync(dir) {
+    const sep = path.sep;
+    const initDir = path.isAbsolute(dir) ? sep : '';
+    dir.split(sep).reduce((parentDir, childDir) => {
+        const curDir = path.resolve(parentDir, childDir);
+        console.log(`Dir Name: ${curDir}`);
+        if (!fs.existsSync(curDir)) {
+          console.log('Created');
+          fs.mkdirSync(curDir);
+        }
+        return curDir;
+      }, initDir);
+}
+
+
+
 
 module.exports = {
-    readConfigFile: readConfigFile,
-    isEmptyObject: isEmptyObject,
-    deleteFolderRecursive: deleteFolderRecursive
+    readConfigFile,
+    isEmptyObject,
+    deleteFolderRecursive,
+    mkdirWithParentsSync
 }

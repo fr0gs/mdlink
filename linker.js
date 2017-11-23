@@ -93,6 +93,9 @@ function removeLinks(config = {}, npm_global_prefix, project_path) {
                 sudo.exec(`rm -rf ${global_module_path}`, {}, (err, stdo, stdedd) => { if (err) throw err });
             }
         });
+
+        //TODO: CLEANUP OF THE CLONED REPOSITORIES
+
         exec("npm install", (error, stdout, stderr) => {
             if (error) throw new Error('Could not execute npm install')
         });
@@ -142,11 +145,11 @@ function linkModules(config = {}, npm_global_prefix, project_path) {
                     }
                     else {
                         const dir = path.join(BASE_MODULES_PATH, module);
-                        if (!fs.existsSync(dir)) 
-                            fs.mkdirSync(dir);
+                        if (!fs.existsSync(dir))
+                            util.mkdirWithParentsSync(dir)
                         clone(repo_module_url, dir, () => {
-                            console.log(`[+] <path does not exist> . Successfully cloned ${repo_module_url}`);
-                            createLink(global_module_path, repo_module_path, local_module_path);
+                            console.log(`[+] <path does not exist> . Successfully cloned ${repo_module_url} in ${dir}`);
+                            createLink(global_module_path, dir, local_module_path);
                             console.log("-------------------------");
                         })
                     }
