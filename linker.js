@@ -50,7 +50,9 @@ function createLink(global, repo, local) {
     // This needs sudo since we are copying files in a
     // sensitive directory.
     sudo.exec(`npm link ${repo}`, {}, (error, stdout, stderr) => {
-            if (error) throw error;
+            if (error) {
+                throw new Error(error);
+            };
         }
     );
 
@@ -120,7 +122,7 @@ function linkModules(config = {}, npm_global_prefix, project_path) {
         if (paths().indexOf(NPM_GLOBAL_PATH) != -1) {
             const modules = config['modules'];
 
-            async.forEach(Object.keys(modules), (module, callback) => {
+            async.forEachSeries(Object.keys(modules), (module, callback) => {
                 const global_module_path = `${NPM_GLOBAL_PATH}/${module}`;
                 const local_module_path = `${project_path}/node_modules/${module}`;
                 const repo_module_path = modules[module].path || undefined;
@@ -161,6 +163,9 @@ function linkModules(config = {}, npm_global_prefix, project_path) {
                     }
                     else throw new Error(`${repo_module_path} does not exist`);
                 }
+            }, (error) => {
+                console.log('mierda');
+                throw new Error(error);
             });
         }
         else throw new Error(`${npm_global_prefix}/lib/node_modules does not exist`);
