@@ -7,7 +7,7 @@ const fs = require('fs');
 const process = require('process');
 const exec = require('child_process').exec;
 const linker = require('./linker.js');
-const util = require('./mlink-util.js');
+const util = require('./mdlink-util.js');
 
 
 const PROJECT_PATH = process.cwd();
@@ -19,7 +19,7 @@ program
 program
     .command("init")
     .alias("i")
-    .description("Create the a mlink.config.json skeleton file")
+    .description("Create the a mdlink.config.json skeleton file")
     .action(() => linker.createInitConfig());
 
 program
@@ -36,7 +36,7 @@ program
 program
     .command("reset")
     .alias("r")
-    .description("Remove all the links created by mlink and reinstall packages using npm")
+    .description("Remove all the links created by mdlink and reinstall packages using npm")
     .action(() => {
         exec("npm config get prefix", (error, stdout, stderr) => {
             let npm_global_prefix = stdout.trim();
@@ -45,4 +45,3 @@ program
     });
 
 program.parse(process.argv);
-

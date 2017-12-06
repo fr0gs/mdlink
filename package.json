@@ -1,8 +1,8 @@
 {
-  "name": "mlink",
+  "name": "mdlink",
   "version": "1.3.2",
   "description": "An automatic npm module linker to quickly test & develop multiple modules in a project",
-  "main": "mlink.js",
+  "main": "mdlink.js",
   "author": "Esteban Sastre",
   "license": "MIT",
   "scripts": {

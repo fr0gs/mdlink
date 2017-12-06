@@ -4,11 +4,11 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * Reads the mlink configuration file from disk
+ * Reads the mdlink configuration file from disk
  * @returns {object} - the parsed object.
  */
 function readConfigFile() {
-    return JSON.parse(fs.readFileSync('mlink.config.json', 'utf8'));
+    return JSON.parse(fs.readFileSync('mdlink.config.json', 'utf8'));
 }
 
 /**
@@ -21,9 +21,9 @@ function isEmptyObject(obj) {
 }
 
 /**
- * Delete recursively the folder in path and 
+ * Delete recursively the folder in path and
  * its subfolders.
- * @param {string} path 
+ * @param {string} path
  */
 function deleteFolderRecursiveSync(path) {
     if (fs.existsSync(path)) {
@@ -43,7 +43,7 @@ function deleteFolderRecursiveSync(path) {
 /**
  * Creates a directory in the specified path with the
  * intermediate folders if necessary.
- * @param {string} dir the directory path to create. 
+ * @param {string} dir the directory path to create.
  */
 function mkdirWithParentsSync(dir) {
     const sep = path.sep;

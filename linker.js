@@ -8,7 +8,7 @@ const path = require('path');
 const paths = require('global-paths');
 const promise = require('promise');
 const sudo = require('sudo-prompt');
-const util = require('./mlink-util.js');
+const util = require('./mdlink-util.js');
 
 
 /**
@@ -20,19 +20,19 @@ function createInitConfig() {
         "base_modules_path": "~/gits/test",
         "modules": [
             {
-                "mlink": {
-                    "url": "https://github.com/fr0gs/mlink",
-                    "path": "~/gits/test/mlink"
+                "mdlink": {
+                    "url": "https://github.com/fr0gs/mdlink",
+                    "path": "~/gits/test/mdlink"
                 }
             }
         ]
     }
     let json = JSON.stringify(sampleObject, null, 2);
 
-    if (fs.existsSync('mlink.config.json')) 
-        throw new Error('mlink.config.json already exists');
+    if (fs.existsSync('mdlink.config.json'))
+        throw new Error('mdlink.config.json already exists');
 
-    return fs.writeFileSync('mlink.config.json', json);
+    return fs.writeFileSync('mdlink.config.json', json);
 }
 
 
@@ -63,14 +63,14 @@ function createLink(global, repo, local, callback) {
 
 
 /**
- * Removes the two created links when executing 
- * npm link/npm link <module> 
+ * Removes the two created links when executing
+ * npm link/npm link <module>
  * @param {object} config - the configuration object.
  * @param {string} npm_global_prefix - the npm global prefix (i.e /usr)
  */
 function removeLinks(config = {}, npm_global_prefix, project_path) {
     if (util.isEmptyObject(config)) {
-        throw new Error("The mlink.config.json file is empty");
+        throw new Error("The mdlink.config.json file is empty");
     }
     const NPM_GLOBAL_PATH = `${npm_global_prefix}/lib/node_modules`;
     const BASE_MODULES_PATH = config['base_modules_path'];
@@ -93,9 +93,9 @@ function removeLinks(config = {}, npm_global_prefix, project_path) {
 
             if (fs.existsSync(global_module_path)) {
                 console.log(`[+] Remove global link from ${global_module_path} -> ${repo_module_path}`);
-                sudo.exec(`rm -rf ${global_module_path}`, {}, (err, stdo, stdedd) => { 
+                sudo.exec(`rm -rf ${global_module_path}`, {}, (err, stdo, stdedd) => {
                     if (err) throw err;
-                    callback(); 
+                    callback();
                 });
             }
         });
@@ -110,14 +110,14 @@ function removeLinks(config = {}, npm_global_prefix, project_path) {
 }
 
 /**
- * Removes the necessary links equivalent to 
- * executing npm link/npm link <module>. 
+ * Removes the necessary links equivalent to
+ * executing npm link/npm link <module>.
  * @param {object} config - the configuration object.
  * @param {string} npm_global_prefix - the npm global prefix (i.e /usr)
  */
 function linkModules(config = {}, npm_global_prefix, project_path) {
     if (util.isEmptyObject(config)) {
-        throw new Error("The mlink.config.json file is empty");
+        throw new Error("The mdlink.config.json file is empty");
     }
     else {
         const NPM_GLOBAL_PATH = `${npm_global_prefix}/lib/node_modules`;
@@ -133,7 +133,7 @@ function linkModules(config = {}, npm_global_prefix, project_path) {
                 const repo_module_path = modules[module].path || undefined;
                 const repo_module_url = modules[module].url || undefined;
 
-                // If ./node_modules/module exists, either normal or symlink, remove it.
+                // If ./node_modules/module exists, either normal or symdlink, remove it.
                 if (fs.existsSync(local_module_path)) {
                     console.log(`[+] Path ${local_module_path} already exists, removing it.`);
                     util.deleteFolderRecursiveSync(local_module_path);
