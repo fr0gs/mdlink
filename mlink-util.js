@@ -25,12 +25,12 @@ function isEmptyObject(obj) {
  * its subfolders.
  * @param {string} path 
  */
-function deleteFolderRecursive(path) {
+function deleteFolderRecursiveSync(path) {
     if (fs.existsSync(path)) {
         fs.readdirSync(path).forEach(function (file, index) {
             let curPath = path + "/" + file;
             if (fs.lstatSync(curPath).isDirectory()) { // recurse
-                deleteFolderRecursive(curPath);
+                deleteFolderRecursiveSync(curPath);
             } else { // delete file
                 fs.unlinkSync(curPath);
             }
@@ -50,9 +50,7 @@ function mkdirWithParentsSync(dir) {
     const initDir = path.isAbsolute(dir) ? sep : '';
     dir.split(sep).reduce((parentDir, childDir) => {
         const curDir = path.resolve(parentDir, childDir);
-        console.log(`Dir Name: ${curDir}`);
         if (!fs.existsSync(curDir)) {
-          console.log('Created');
           fs.mkdirSync(curDir);
         }
         return curDir;
@@ -65,6 +63,6 @@ function mkdirWithParentsSync(dir) {
 module.exports = {
     readConfigFile,
     isEmptyObject,
-    deleteFolderRecursive,
+    deleteFolderRecursiveSync,
     mkdirWithParentsSync
 }

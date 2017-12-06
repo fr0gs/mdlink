@@ -6,6 +6,7 @@ const exec = require('child_process').exec;
 const fs = require('fs');
 const path = require('path');
 const paths = require('global-paths');
+const promise = require('promise');
 const sudo = require('sudo-prompt');
 const util = require('./mlink-util.js');
 
@@ -43,22 +44,21 @@ function createInitConfig() {
  * @param {string} repo - the local path where the repository is cloned/installed.
  * @param {string} local - the local path of the module (./node_modules/abc)
  */
-function createLink(global, repo, local) {
+function createLink(global, repo, local, callback) {
     console.log(`[+] Create link from ${global} -> ${repo}`);
+    console.log(`[+] Create link from ${local} -> ${global}`);
 
     // Create the global module -> local repository link.
+    // Create the local -> repository link.
     // This needs sudo since we are copying files in a
     // sensitive directory.
     sudo.exec(`npm link ${repo}`, {}, (error, stdout, stderr) => {
             if (error) {
                 throw new Error(error);
-            };
+                }
+            return callback();
         }
     );
-
-    // Create the local node_modules/module -> global module linkModules.
-    console.log(`[+] Create link from ${local} -> ${global}`);
-    fs.symlinkSync(global, local);
 }
 
 
@@ -119,7 +119,8 @@ function linkModules(config = {}, npm_global_prefix, project_path) {
         const NPM_GLOBAL_PATH = `${npm_global_prefix}/lib/node_modules`;
         const BASE_MODULES_PATH = config['base_modules_path'];
 
-        if (paths().indexOf(NPM_GLOBAL_PATH) != -1) {
+        // Check if the npm global path is among the common ones
+        if (paths().indexOf(NPM_GLOBAL_PATH) !== -1) {
             const modules = config['modules'];
 
             async.forEachSeries(Object.keys(modules), (module, callback) => {
@@ -131,7 +132,7 @@ function linkModules(config = {}, npm_global_prefix, project_path) {
                 // If ./node_modules/module exists, either normal or symlink, remove it.
                 if (fs.existsSync(local_module_path)) {
                     console.log(`[+] Path ${local_module_path} already exists, removing it.`);
-                    util.deleteFolderRecursive(local_module_path);
+                    util.deleteFolderRecursiveSync(local_module_path);
                 }
 
                 // If there is a url specified.
@@ -141,8 +142,10 @@ function linkModules(config = {}, npm_global_prefix, project_path) {
                         //Clone the url in the path.
                         clone(repo_module_url, repo_module_path, () => {
                             console.log(`[+] <path exists> . Successfully cloned ${repo_module_url} in path: ${repo_module_path}`);
-                            createLink(global_module_path, repo_module_path, local_module_path);
-                            console.log("-------------------------");
+                            createLink(global_module_path, repo_module_path, local_module_path, () => {
+                                console.log("-------------------------");
+                                callback();
+                            });
                         })
                     }
                     else {
@@ -151,21 +154,22 @@ function linkModules(config = {}, npm_global_prefix, project_path) {
                             util.mkdirWithParentsSync(dir)
                         clone(repo_module_url, dir, () => {
                             console.log(`[+] <path does not exist> . Successfully cloned ${repo_module_url} in ${dir}`);
-                            createLink(global_module_path, dir, local_module_path);
-                            console.log("-------------------------");
+                            createLink(global_module_path, dir, local_module_path, () => {
+                                console.log("-------------------------");
+                                callback();
+                            });
                         })
                     }
                 }
                 else {
                     if (fs.existsSync(repo_module_path)) {
-                        createLink(global_module_path, repo_module_path, local_module_path);
-                        console.log("-------------------------");
+                        createLink(global_module_path, repo_module_path, local_module_path, () => {
+                            console.log("-------------------------");
+                            callback();
+                        });
                     }
                     else throw new Error(`${repo_module_path} does not exist`);
                 }
-            }, (error) => {
-                console.log('mierda');
-                throw new Error(error);
             });
         }
         else throw new Error(`${npm_global_prefix}/lib/node_modules does not exist`);
