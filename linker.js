@@ -77,7 +77,7 @@ function removeLinks(config = {}, npm_global_prefix, project_path) {
 
     if (paths().indexOf(NPM_GLOBAL_PATH) != -1) {
         const modules = config['modules'];
-        Object.keys(modules).forEach((module) => {
+        async.forEachSeries(Object.keys(modules), (module, callback) => {
             const global_module_path = `${NPM_GLOBAL_PATH}/${module}`;
             const local_module_path = `${project_path}/node_modules/${module}`;
             const repo_module_path = `${modules[module].path}`;
@@ -87,12 +87,16 @@ function removeLinks(config = {}, npm_global_prefix, project_path) {
                 if (stats.isSymbolicLink()) {
                     console.log(`[+] Remove local link from ${local_module_path} -> ${global_module_path}`);
                     fs.unlinkSync(local_module_path);
+                    callback();
                 }
             }
 
             if (fs.existsSync(global_module_path)) {
                 console.log(`[+] Remove global link from ${global_module_path} -> ${repo_module_path}`);
-                sudo.exec(`rm -rf ${global_module_path}`, {}, (err, stdo, stdedd) => { if (err) throw err });
+                sudo.exec(`rm -rf ${global_module_path}`, {}, (err, stdo, stdedd) => { 
+                    if (err) throw err;
+                    callback(); 
+                });
             }
         });
 
