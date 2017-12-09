@@ -13,7 +13,7 @@ const util = require('./mdlink-util.js');
 const PROJECT_PATH = process.cwd();
 
 program
-    .version('1.0.0')
+    .version('1.3.5')
     .description("An automatic npm module linker to quickly test & develop multiple modules in a project");
 
 program
