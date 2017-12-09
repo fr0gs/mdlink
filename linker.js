@@ -86,7 +86,6 @@ function removeLinks(config = {}, npm_global_prefix, project_path) {
                 if (stats.isSymbolicLink()) {
                     console.log(`[+] Remove local link from ${local_module_path} -> ${global_module_path}`);
                     fs.unlinkSync(local_module_path);
-                    callback();
                 }
             }
 
@@ -97,12 +96,13 @@ function removeLinks(config = {}, npm_global_prefix, project_path) {
                     callback();
                 });
             }
+            else {
+                callback();
+            }
         });
 
-        //TODO: CLEANUP OF THE CLONED REPOSITORIES
-
         exec("npm install", (error, stdout, stderr) => {
-            if (error) throw new Error('Could not execute npm install')
+            if (error) throw new Error('Could not execute npm install');
         });
     }
     else throw new Error(`${npm_global_prefix}/lib/node_modules does not exist`);

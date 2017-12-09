@@ -44,4 +44,4 @@ Documentation is generated running `npm run doc` in html format. After that just
 
 * Support ~ in mlink.config.json
 * Add modules one by one. e.g: `mlink a <name> --url <url> --path <path>`. This would modify the mlink.config.json and perform the installing and linking.
-*
+* Cleanup of the cloned repositories.
