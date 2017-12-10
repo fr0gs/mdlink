@@ -1,4 +1,5 @@
+npm-debug.log.*
 yarn-error.log
 node_modules/
-mlink.config.json
+mdlink.config.json
 doc/

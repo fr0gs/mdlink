@@ -29,7 +29,7 @@ program
     .action(() => {
         exec("npm config get prefix", (error, stdout, stderr) => {
             let npm_global_prefix = stdout.trim();
-            linker.linkModules(util.readConfigFile(), npm_global_prefix, PROJECT_PATH);
+            linker.linkModulesAlt(util.readConfigFile(), npm_global_prefix, PROJECT_PATH);
         });
     });
 
@@ -40,7 +40,7 @@ program
     .action(() => {
         exec("npm config get prefix", (error, stdout, stderr) => {
             let npm_global_prefix = stdout.trim();
-            linker.removeLinks(util.readConfigFile(), npm_global_prefix, PROJECT_PATH);
+            linker.removeLinksAlt(util.readConfigFile(), npm_global_prefix, PROJECT_PATH);
         });
     });
 
