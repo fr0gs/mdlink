@@ -36,6 +36,12 @@ Modules are specified in the `mdlink.config.json` configuration file. e.g:
 Documentation is generated running `npm run doc` in html format. After that just browse the **doc/** folder.
 
 
+# Support
+
+Supported versions:
+  * nodejs: **6.12.2**
+
+
 ## TODO Bugs
 
 * Look for duplicate modules in config file -> fail.

@@ -1212,10 +1212,6 @@ init-package-json@~1.10.1:
     validate-npm-package-license "^3.0.1"
     validate-npm-package-name "^3.0.0"
 
-inpath@~1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/inpath/-/inpath-1.0.2.tgz#4ac219710ec7a72f460ff94bf424dd3ef0e52817"
-
 invert-kv@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/invert-kv/-/invert-kv-1.0.0.tgz#104a8e4aaca6d3d8cd157a8ef8bfab2d7a3ffdb6"
@@ -2106,10 +2102,6 @@ performance-now@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/performance-now/-/performance-now-2.1.0.tgz#6309f4e0e5fa913ec1c69307ae364b4b377c9e7b"
 
-pidof@~1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/pidof/-/pidof-1.0.2.tgz#fba0eae1c8335a11eb8099f5d0f3efbc45cb4e90"
-
 pify@^2.0.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/pify/-/pify-2.3.0.tgz#ed141a6ac043a849ea588498e7dca8b15330e90c"
@@ -2326,7 +2318,7 @@ read-pkg@^2.0.0:
     normalize-package-data "^2.3.2"
     path-type "^2.0.0"
 
-read@1, read@~1.0.1, read@~1.0.3, read@~1.0.7:
+read@1, read@~1.0.1, read@~1.0.7:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/read/-/read-1.0.7.tgz#b3da19bd052431a97671d44a42634adf710b40c4"
   dependencies:
@@ -2755,14 +2747,6 @@ strong-data-uri@^1.0.0:
 sudo-prompt@^8.0.0:
   version "8.0.0"
   resolved "https://registry.yarnpkg.com/sudo-prompt/-/sudo-prompt-8.0.0.tgz#a7b4a1ca6cbcca0e705b90a89dfc81d11034cba9"
-
-sudo@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/sudo/-/sudo-1.0.3.tgz#ccf28669120f8b74f82b846dff7f1c95120eff20"
-  dependencies:
-    inpath "~1.0.2"
-    pidof "~1.0.2"
-    read "~1.0.3"
 
 supports-color@^2.0.0:
   version "2.0.0"

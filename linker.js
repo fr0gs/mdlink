@@ -17,14 +17,12 @@ const util = require('./mdlink-util.js');
 function createInitConfig() {
     let sampleObject = {
         "base_modules_path": "~/gits/test",
-        "modules": [
-            {
-                "mdlink": {
-                    "url": "https://github.com/fr0gs/mdlink",
-                    "path": "~/gits/test/mdlink"
-                }
+        "modules": {
+          "mdlink": {
+            "url": "https://github.com/fr0gs/mdlink",
+            "path": "~/gits/test/mdlink"
             }
-        ]
+        }
     }
     let json = JSON.stringify(sampleObject, null, 2);
 
@@ -45,19 +43,17 @@ function createInitConfig() {
  */
 function createLink(global, repo, local, callback) {
     console.log(`[+] Create link from ${global} -> ${repo}`);
-    console.log(`[+] Create link from ${local} -> ${global}`);
+    // console.log(`[+] Create link from ${local} -> ${global}`);
 
     // Create the global module -> local repository link.
     // Create the local -> repository link.
     // This needs sudo since we are copying files in a
     // sensitive directory.
-    sudo.exec(`npm link ${repo}`, {}, (error, stdout, stderr) => {
-        if (error) {
-            throw new Error(error);
-        }
-        return callback();
-    }
-    );
+    sudo.exec(`npm link ${repo}`, {},
+        (error, stdout, stderr) => {
+          if (error) throw new Error(error);
+          return callback();
+        });
 }
 
 
@@ -76,15 +72,15 @@ function traverseModules(config = {}, npm_global_prefix, project_path, strategy,
             const repo_module_path = modules[module].path || undefined;
             const repo_module_url = modules[module].url || undefined;
 
-            return strategy(global_module_path, 
-                            local_module_path, 
+            return strategy(global_module_path,
+                            local_module_path,
                             repo_module_path,
                             repo_module_url,
                             callback);
 
         });
 
-        return cb();
+        return cb ? cb() : undefined;
     }
     else throw new Error(`${npm_global_prefix}/lib/node_modules does not exist`);
 }
@@ -117,15 +113,15 @@ function removeLinks(config = {}, npm_global_prefix, project_path) {
             cb();
         }
     };
-    return traverseModules(config, 
-                    npm_global_prefix, 
-                    project_path, 
+    return traverseModules(config,
+                    npm_global_prefix,
+                    project_path,
                     removeStrategy,
                     () => {
                         exec("npm install", (error, stdout, stderr) => {
                             if (error) throw new Error('Could not execute npm install');
                         });
-                    });                
+                    });
 }
 
 
@@ -178,8 +174,7 @@ function linkModules(config = {}, npm_global_prefix, project_path) {
     return traverseModules(config,
                            npm_global_prefix,
                            project_path,
-                           linkStrategy,
-                           () => console.log("Properly linked modules"));   
+                           linkStrategy);
 }
 
 
